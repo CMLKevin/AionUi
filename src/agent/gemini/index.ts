@@ -846,7 +846,20 @@ export class GeminiAgent {
     return requestId;
   }
   stop(): void {
+    // Abort the current network request
     this.abortController?.abort();
+
+    // Clear conversation history to prevent the AI from continuing to respond
+    // to the previous question when a new question is sent after stopping.
+    // This ensures that after clicking stop, the next message starts a fresh conversation.
+    if (this.geminiClient?.isInitialized()) {
+      try {
+        this.geminiClient.setHistory([]);
+        console.log('[GeminiAgent] Stop: Cleared conversation history');
+      } catch (e) {
+        console.warn('[GeminiAgent] Stop: Failed to clear history:', e);
+      }
+    }
   }
 
   async injectConversationHistory(text: string): Promise<void> {
